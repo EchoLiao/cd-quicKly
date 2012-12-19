@@ -1,46 +1,44 @@
 
 // add these lines to ~/.bashrc
 
+cdqf=$HOME/.cd_quickly_history
 function cd()
 {
-    tf=/tmp/tmp1234_23333333
-    pad=`echo -e \011`
-    if [[ $# == 0 ]]; then
-        dst="$HOME"
+    cdtf=/tmp/tmp3234_23933333_cd_tmp
+    dst="$@"
+
+    if [[ $# != 0 ]]; then
+        ret=`sed -ne "${1}p" $cdqf 2>/dev/null`
+        [[ ! -z $ret ]] && {
+            dst=$ret
+        }
     else
-        dst="$@"
+        dst=$HOME
     fi
 
-    rm -f $tf
-    echo -e ${cd_history//"$pad"/\\n} | sort -u | nl |
-    while read line
-    do 
-        nr=`echo $line | awk '{ print $1}'`
-        if [[ "$1" == $nr ]]; then
-            dst=`echo -e ${line//"$nr"/}` # QQQQQ
-            echo $dst > $tf
-            break
-        fi
-    done
+    builtin cd "$dst" && pwd
 
-    if [[ -e $tf ]]; then 
-        dst=`head -1 $tf`
-    fi
-
-    builtin cd "$dst"
-
-    if [[ -z "$cd_history" ]]; then
-        cd_history="`pwd`"
-    else
-        cd_history="$cd_history"$pad"`pwd`"
-    fi
-
-    # echo -e ${cd_history//"$pad"/\\n} | sort -u | nl
+    echo -e "`pwd`" >> $cdqf
+    cat $cdqf | sort -u >> $cdtf
+    mv -f $cdtf $cdqf
 }
-
 
 function c()
 {
-    echo -e ${cd_history//"$pad"/\\n} | sort -u | nl
+    cat $cdqf | nl
+}
+
+function cg()
+{
+    c | grep -i "$1"
+}
+
+function cr()
+{
+    cdtf=/tmp/tmp3234_23937793_cd_tmp
+    [[ $# != 0 ]] && {
+        `sed -e "${1}d" $cdqf 1>$cdtf 2>/dev/null`
+        mv -f $cdtf $cdqf
+    }
 }
 
